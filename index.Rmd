@@ -1,0 +1,337 @@
+---
+title       : Sequía Agrícola
+subtitle    : Exámen de Calificación
+author      : Francisco Zambrano Bigiarini
+job         : Doctorando en Ingeniería Agrícola c/m en Recursos Hídricos
+logo        : escudo_udec3.png
+biglogo     : escudo_udec.png
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : [mathjax, bootstrap, quiz]        # {mathjax, quiz, bootstrap}
+ext_widgets : {rCharts: [libraries/nvd3]}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---.segue bg:grey
+
+## 1.- Contexto
+
+---
+
+## Definición de Sequía
+
+>- Es un fenómeno rastrero __(Gillette, 1950)__
+>- La sequía es el desastre natural más complejo de identificar, analizar, monitorear y manejar **(Burton, Kates, & White, 1978, p. 240; Wilhite,1993)**.
+>- Las diferentes variables hidrometeorológicas y factores socioeconómicos, así como la naturaleza estocástica de la demanda de agua, es un obstaculo para una definición precisa **(Mishra and Singh, 2010)**.
+>- En una forma realista la definición de sequía debe ser para una región y aplicación (o impacto) específico __(Wilhite and Glantz, 1985)__.
+>- _"The impracticality of a universal drought definition" **(Lloyd, 2014)**_
+
+---
+
+## Tipos de Sequía
+
+```{r, 'diagrammer1', echo=FALSE, warning=FALSE,cache=FALSE,results='asis'}
+library(htmlwidgets)
+library(DiagrammeR)
+cat('<iframe src="diagram_type_drought.html" width=100% height=100% allowtransparency="true" style="background: #FFCCFF;"> </iframe>')
+```
+
+---
+
+## Investigaciones Relevantes
+
+>1. Standarized Precipitation Index (SPI) (**Mckee, 1993**) *"The relationship of drought frecuency and duration to time scales"*
+>2. Vegetation Condition Index (VCI) (**Kogan, 1990**) *"Remote sensing of weather impacts on vegetation in non-homogeneous areas"*
+>3. Temperature Condition Index (TCI) (**Kogan, 1995**) *"Application of vegetation index and brightness temperature for drought detection"*
+>4. Vegetation Health Index (VHI) (**Kogan, 1997**) *"Global drought watch from space"*
+>5. Standarized Vegetation Index (SVI) (**Peters et al, 2002**) *"Drought Monitoring with NDVI-Based Standarized Vegetation Index"*
+>6. Precipitation Condition Index (PCI) and Scaled Drought Condition Index (SDCI) (**Rhee et al, 2010**) *"Monitoring agricultural drought for arid and humid regions using multi-sensor remote sensing data"*
+>7. Synthesized Drought Index (SDI) (**Du et al, 2013**) *"A comprehensive drought monitoring method integrating MODIS and TRMM data"*
+
+---
+
+## Investigaciones Relevantes
+
+<script>
+$("#foo ol").attr('start', 8)
+</script>
+
+>8. Standarized Precipitation Evapotranspiration Index (SPEI) (**Vicente-Serrano et al, 2010**) *"A Multiscalar Drought Index Sensitive to Global Warming: The Standardized Precipitation Evapotranspiration Index"*
+
+---
+
+## Indicadores de Sequía
+
+```{r, 'diagrammer2', echo=FALSE, warning=FALSE,cache=FALSE,results='asis'}
+cat('<iframe src="diagram_clases_drought.html" width=100% height=100% allowtransparency="true" style="background: #FFCCFF;"> </iframe>')
+```
+
+---
+
+## Tipos de Indicadores (Forma de Cálculo)
+
+>- __<span style="color: red"> Estandarizados </span>__
+  - SPI
+  - SPEI
+  - SVI
+  - Zratio
+>- __<span style="color: red"> Escalados </span>__
+  - VCI
+  - TCI
+  - PCI
+>- __<span style="color: red"> Combinados </span>__
+  - VHI
+  - SDCI
+
+---&twocol
+
+## Índice Estandarizado de Precipitación (SPI)
+
+*** =left
+
+```{r,fig.width=5,fig.height=7,fig.align='center',echo=FALSE,warning=FALSE,message=FALSE,cache=FALSE}
+library(ggplot2)
+library(SPEI)
+library(reshape2)
+library(gridExtra)
+
+dir<-"~/Dropbox/paper_inProgress/drought_indices_biobio/"
+lf<-list.files(file.path(dir,"/data/raw.data/precipitacion/"),pattern='*.csv$',full.names=TRUE)
+data<-read.csv(lf[31])
+data.ts<-ts(data$PP,start=c(1969,1),frequency=12)
+
+df<-data.frame(dates=seq(as.Date("1969-01-01"),as.Date("2014-03-01"),by='month'),
+               PP=as.numeric(data.ts),SPI1=as.numeric(spi(data.ts,1,na.rm=TRUE)$fitted),
+               SPI3=as.numeric(spi(data.ts,3,na.rm=TRUE)$fitted),
+               SPI6=as.numeric(spi(data.ts,6,na.rm=TRUE)$fitted),
+               SPI12=as.numeric(spi(data.ts,1,na.rm=TRUE)$fitted))
+df.m<-melt(df)
+p1<-ggplot(df, aes(x = PP)) + 
+  stat_ecdf(colour='blue',size=2)+theme_minimal()
+
+p2<-ggplot(df, aes(x = SPI1)) + 
+  stat_ecdf(colour='red',size=2)+theme_minimal()
+
+grid.arrange( p1, p2, nrow=2)
+
+```
+
+*** =right
+
+## Características
+
+>1. Sólo utiliza precipitación
+>2. Permite utilizar diferentes escalas de tiempo
+>3. Comparable espacialmente
+
+---
+
+## SPI Estación UdeC Chillán, 1, 3, 6 , 12 meses
+
+```{r,echo=FALSE,warning=FALSE,cache=FALSE,results='asis'}
+data.ts<-cbind(SPI1=spi(data.ts,1,na.rm=TRUE)$fitted,
+               SPI3=spi(data.ts,3,na.rm=TRUE)$fitted,
+               SPI6=spi(data.ts,6,na.rm=TRUE)$fitted,
+               SPI12=spi(data.ts,12,na.rm=TRUE)$fitted)
+library(dygraphs)
+dyplot<-dygraph(data.ts) %>% 
+  dyRangeSelector(dateWindow = c("1969-01-01", "2014-03-01"))
+saveWidget(dyplot, 'dygraphs_spi.html')
+cat('<iframe src="dygraphs_spi.html" width=100% height=100% allowtransparency="true"> </iframe>')
+```
+
+--- 
+
+## Índice de Condición de la Vegetación (VCI)
+
+$$
+VCI = \frac{NDVI-NDVI_{min}}{NDVI_{max}-NDVI_{min}}
+$$
+
+### Caracteristica ###
+
+<q> "Separa la componente climática de la vegetacional"</q>
+
+<style>
+.dark q {
+  color: white;
+}
+</style>
+
+---
+
+## Índice de Condición de la Vegetación (VCI)
+
+```{r,echo=FALSE,warning=FALSE,cache=FALSE,results='asis'}
+dir<-'~/Dropbox/paper_inProgress/vci_paper'
+df<-read.csv2(file.path(dir,'data.frame/pixel_1.csv'))[,2:7]
+df$vci<-df$vci/100
+df$time<-as.Date(df$time)
+df$mes<-format(df$time,"%m")
+df$year<-format(df$time,"%Y")
+library(plyr)
+df2<-ddply(df[,c(1:5,7,8)],.(mes,year),numcolwise(mean))
+df2$date<-as.Date(paste0(df2$year,'-',df2$mes,'-01'))
+
+df2<-df2[order(df2$date),]
+
+data2.ts<-cbind(VCI=ts(df2$vci,start=c(2000,2),frequency=12),
+                NDVI.MIN=ts(df2$ndvi.mn,start=c(2000,2),frequency=12),
+                NDVI=ts(df2$ndvi,start=c(2000,2),frequency=12),
+                NDVI.MAX=ts(df2$ndvi.mx,start=c(2000,2),frequency=12))
+dyplot2<-dygraph(data2.ts) %>% 
+  dyRangeSelector(dateWindow = c("2000-02-01", "2012-12-01")) %>% 
+ dyHighlight(highlightSeriesOpts = list(strokeWidth = 3))
+saveWidget(dyplot2, 'dygraphs_vci.html')
+cat('<iframe src="dygraphs_vci.html" width=100% height=80% allowtransparency="true"> </iframe>')
+
+```
+
+---.segue bg:grey
+
+## 2.- Declaración del Problema 
+
+---&twocol
+
+## ¿Que hay en Chile?
+
+*** =left
+
+- La Dirección Meteorológica de Chile (DMC) realiza el calculo del SPI
+
+<div style='text-align: center;'>
+    <img width='500' src='./assets/img/ipe_dmc.png' />
+</div>
+
+*** =right
+
+- Atlas de Sequía ALC (CAZALAC) (**Nuñez et al.,2011**)
+  - Periodo de Retorno
+  - Máxima precipitación esperada
+  - Mínima precipitación esperada
+
+<div style='text-align: center;'>
+    <img width='300' src='./assets/img/atlas_sequia_cazalac.png' />
+</div>
+
+---
+
+## ¿Que hay en Chile?
+
+_ClimateDataLibrary (www.climatedatalibrary.cl/maproom)_
+
+<div style='text-align: center;'>
+    <img width='800' src='./assets/img/datalibrary_chile.png' />
+</div>
+
+---{.build}
+
+## ¿Qué hace falta?
+
+>1. Evaluación conjunta entre los déficit de precipitaciones y la respuesta de la vegetación.
+>2. Evaluación de la sequía agrícola a diferentes escalas temporales y espaciales.
+>3. Una mejor compresión de la sequía desde el punto de vista de la componente agrícola.
+
+## ¿Qué se propone?
+
+>- __"Evaluar multiples indicadores de sequía meteorológia y agrícola a diferentes escalas temporales y espaciales en la zona agrícola centro sur de Chile"__
+
+---.segue bg:grey
+
+## 3.- Avances de la Investigación
+
+---&twocol
+
+## Fuentes de información utilizada
+
+*** =left
+
+**Satelital**
+
+>- MODIS
+  - MOD13 (Vegetación)
+  - MOD11 (T° Superficial de Suelo)
+  - MCD12 (Cubierta Terrestre) 
+
+>- TRMM
+  - 3B42 versión 7
+
+*** =right
+
+**Puntual**
+
+>- Datos de precipitación
+  - Dirección Meteorológica de Chile (DGA)
+  - Dirección General de Aguas (DGA)
+  - Otras fuentes
+
+---
+
+## Herramientas de análisis de datos
+
+__Software Libre "R"__
+
+>- Packages
+  - raster (análisis de datos raster) (**Hijmans, 2015**)
+  - maptools (mapas) (**Bivand and Lewin-Koh, 2015**)
+  - plyr (manejo de gran cantidad de datos) (**Wickham, 2011**)
+  - ggplot2 (gráfica) (**Wickham, 2011**)
+  - SPEI (indicadores de sequía) (**Begueria and Vicente-Serrano,2013**)
+  - Slidify (presentaciónes) (**Vaidyanathan, 2012**)
+  - Knitr (investigación reproducible) (**Xie, 2014**)
+
+---
+
+## Indicadores de sequía seleccionados
+
+>- SPI (precipitación, estandarizada)
+>- VCI (vegetación, escalado)
+>- TCI (T° superficial de suelo, escalada)
+>- VHI (VCI+TCI, combinado)
+>- SVI (vegetación, estandarizado)
+>- PCI (precipitación TRMM, escalado)
+>- SDCI (VCI+TCI+PCI, combinado)
+
+---
+
+## Área de estudio evaluada
+
+__Región del Bío-Bío__
+
+<div style='text-align: center;'>
+    <img width='550' src='./assets/img/landcover_type.png'/>
+</div>
+
+---.segue bg:grey
+
+## 4.- Algunos resultados
+
+---
+
+## Índice VHI temporada agrícola (sept-abrl)
+
+<iframe src="vhi_biobio.html" width=100% height=100% allowtransparency="true"> </iframe>
+
+---
+
+## Correlación entre SPI-3 (puntual) e indicadores satelitales
+
+```{r echo = F, results = 'asis'}
+dir<-'~/Dropbox/paper_inProgress/drought_indices_biobio'
+
+#Grafico para comparar valores de los indices en los diferentes periodos ene-dic, sept-abr,
+#sep-dic, ene-abr
+load(file='~/Dropbox/paper_inProgress/drought_indices_biobio/data/Rdata/df.cor_indices_meses_temp_agr_puntual.Rdata')
+df.cor.ind.m<-melt(df.cor.ind,id=c('mes','index'))
+
+require(rCharts)
+n1 <- nPlot(value ~ mes, group = 'variable', type = 'multiBarChart',
+  data = subset(df.cor.ind.m,index=='SPI-3')
+)
+n1$print('chart1')
+```
+
+---.segue bg:grey
+
+## Gracias
+
